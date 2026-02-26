@@ -1,0 +1,96 @@
+﻿{% extends "base.html" %}
+{% set page_title = "Documents" %}
+{% set page_heading = "Documents Checklist" %}
+
+{% block content %}
+<section class="card">
+  <h3>Documents Checklist</h3>
+  <p class="muted"><strong>Completion:</strong> {{ completed }}/{{ total_required }} document types verified ({{ completion_percent }}%).</p>
+  <div class="progress-wrap" aria-label="Document completion progress">
+    <div class="progress-bar" style="width: {{ completion_percent }}%;"></div>
+  </div>
+  <ul class="doc-status-list">
+    {% for doc_type in document_types %}
+    <li>
+      {{ doc_type }}
+      {% if doc_type in valid_uploaded_types %}
+        <span class="badge ok">Verified</span>
+      {% else %}
+        <span class="badge bad">Pending</span>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  <ul>
+    <li>Identity proof: Aadhaar, PAN, Passport, or Voter ID.</li>
+    <li>Address proof: Utility bill, rental agreement, or Aadhaar with current address.</li>
+    <li>Income proof: Salary slips, bank statements, Form 16, or ITR.</li>
+    <li>Employment proof: Employer letter or business proof.</li>
+    <li>Property documents: Required for property-linked loan categories.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h3>Upload & Validate Document</h3>
+  <p class="muted">Accepted formats: PDF, JPG, JPEG, PNG | Maximum size: 5 MB</p>
+  <form class="loan-form" action="{{ url_for('documents') }}" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <div class="form-grid">
+      <label>Document Type
+        <select name="document_type" required>
+          <option value="" selected disabled>Select</option>
+          {% for doc in document_types %}
+          <option value="{{ doc }}">{{ doc }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Choose File
+        <input type="file" name="document_file" accept=".pdf,.jpg,.jpeg,.png" required>
+      </label>
+    </div>
+    <button type="submit" class="btn primary">Upload Document</button>
+  </form>
+</section>
+
+<section class="card">
+  <h3>Uploaded Documents</h3>
+  {% if uploads %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Filename</th>
+          <th>Size (KB)</th>
+          <th>Status</th>
+          <th>Validation</th>
+          <th>Uploaded At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in uploads %}
+        <tr>
+          <td>{{ doc.id }}</td>
+          <td>{{ doc.document_type }}</td>
+          <td>{{ doc.original_filename }}</td>
+          <td>{{ "%.1f"|format((doc.file_size or 0) / 1024) }}</td>
+          <td>
+            {% if doc.is_valid %}
+              <span class="badge ok">Valid</span>
+            {% else %}
+              <span class="badge bad">Invalid</span>
+            {% endif %}
+          </td>
+          <td>{{ doc.validation_message }}</td>
+          <td>{{ doc.uploaded_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="muted">No documents uploaded yet.</p>
+  {% endif %}
+</section>
+{% endblock %}

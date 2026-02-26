@@ -1,0 +1,32 @@
+﻿{% extends "base.html" %}
+{% set page_title = "FAQ" %}
+{% set page_heading = "Frequently Asked Questions" %}
+
+{% block content %}
+<section class="card">
+  <h3>FAQ</h3>
+  <p class="muted">Search your question and open the relevant answer.</p>
+
+  <form method="GET" action="{{ url_for('faq') }}" class="loan-form">
+    <div class="form-grid">
+      <label class="full">Search FAQ
+        <input type="text" name="q" value="{{ query }}" placeholder="e.g. confidence, rejection, documents">
+      </label>
+    </div>
+    <button type="submit" class="btn primary">Search</button>
+  </form>
+
+  {% if faq_items %}
+  <div class="faq-list">
+    {% for item in faq_items %}
+    <details class="faq-item">
+      <summary>{{ item.question }}</summary>
+      <p>{{ item.answer }}</p>
+    </details>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="muted">No FAQ matched your search. Try a different keyword.</p>
+  {% endif %}
+</section>
+{% endblock %}

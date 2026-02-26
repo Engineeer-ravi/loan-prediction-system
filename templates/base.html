@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ page_title or 'LoanHub' }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=style_version) }}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-nav">
+      <a class="brand" href="{{ url_for('home') }}">
+        <img src="{{ url_for('static', filename='images/logo.jpeg') }}" alt="Logo">
+        <div>
+          <strong>LoanHub</strong>
+          <span>Decision Platform</span>
+        </div>
+      </a>
+      <nav>
+        <a href="{{ url_for('home') }}">Home</a>
+        {% if current_user.is_authenticated %}
+          {% if is_admin_account(current_user) %}
+            <a href="{{ url_for('admin_profile') }}">Applications</a>
+            <a href="{{ url_for('analysis') }}">Analytics</a>
+            <a href="{{ url_for('documents') }}">Documents</a>
+            <a href="{{ url_for('faq') }}">FAQ & Content</a>
+          {% else %}
+            <a href="{{ url_for('userprofile') }}">My Profile</a>
+            <a href="{{ url_for('predict') }}">Apply Loan</a>
+            <a href="{{ url_for('analysis') }}">Analysis</a>
+            <a href="{{ url_for('about') }}">About</a>
+            <a href="{{ url_for('documents') }}">Documents</a>
+            <a href="{{ url_for('faq') }}">FAQ</a>
+          {% endif %}
+          <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}">Login</a>
+          <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+      </nav>
+    </aside>
+
+    <div class="main-panel">
+      <header class="top-bar">
+        <h1>{{ page_heading or 'Loan Management' }}</h1>
+        {% if current_user.is_authenticated %}
+          <p>{{ current_user.name }} ({{ 'Admin' if is_admin_account(current_user) else 'User' }})</p>
+        {% else %}
+          <p>Smart approvals with ML insights</p>
+        {% endif %}
+      </header>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <section class="alerts">
+        {% for category, message in messages %}
+        <div class="alert {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </section>
+      {% endif %}
+      {% endwith %}
+
+      <main>
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+</body>
+</html>
+

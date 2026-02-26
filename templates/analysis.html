@@ -1,0 +1,240 @@
+﻿{% extends "base.html" %}
+{% set page_title = "Loan Analysis" %}
+{% set page_heading = "Application Analysis" %}
+
+{% block content %}
+<section class="card">
+  <h3>Summary</h3>
+  <div class="metric-grid">
+    <article><h3>{{ summary.total_applications }}</h3><p>Total Applications</p></article>
+    <article><h3>{{ summary.avg_loan_amount }}</h3><p>Average Loan Amount</p></article>
+    <article><h3>{{ summary.avg_term }}</h3><p>Average Term (Months)</p></article>
+    <article><h3>{{ summary.avg_credit }}</h3><p>Average Credit Score</p></article>
+  </div>
+</section>
+
+<section class="card">
+  <h3>Your Loan Analytics</h3>
+  {% if summary.total_applications == 0 %}
+    <p class="muted">No applications available yet. Submit your first loan application to see analysis charts.</p>
+  {% else %}
+    {% if chart_data.uncategorized_count > 0 %}
+    <p class="muted">
+      Note: {{ chart_data.uncategorized_count }} older application(s) do not have a saved loan category.
+    </p>
+    {% endif %}
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h4>Application-wise Loan Amount</h4>
+        <p class="muted"><strong>X-axis:</strong> Application ID | <strong>Y-axis:</strong> Loan amount</p>
+        <div class="chart-box chart-box--wide"><canvas id="loanTrendChart"></canvas></div>
+        <div id="loanAmountSummary" class="chart-summary"></div>
+      </div>
+
+      <div class="chart-card">
+        <h4>Loan Category Distribution</h4>
+        <p class="muted">Shows percentage split across selected loan categories.</p>
+        <div class="chart-box chart-box--square"><canvas id="categoryChart"></canvas></div>
+        <div id="categorySummary" class="chart-summary"></div>
+      </div>
+
+      <div class="chart-card">
+        <h4>Property Location Split</h4>
+        <p class="muted"><strong>X-axis:</strong> Property Location | <strong>Y-axis:</strong> Number of applications</p>
+        <div class="chart-box chart-box--wide"><canvas id="locationChart"></canvas></div>
+        <div id="locationSummary" class="chart-summary"></div>
+      </div>
+    </div>
+  {% endif %}
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const chartData = {{ chart_data | tojson }};
+
+  const formatIN = (n) => new Intl.NumberFormat('en-IN').format(Number(n || 0));
+
+  const barValuePlugin = {
+    id: 'barValuePlugin',
+    afterDatasetsDraw(chart, _args, _opts) {
+      const { ctx } = chart;
+      ctx.save();
+      ctx.fillStyle = '#16323a';
+      ctx.font = '12px Outfit, sans-serif';
+      ctx.textAlign = 'center';
+      const meta = chart.getDatasetMeta(0);
+      meta.data.forEach((bar, idx) => {
+        const val = chart.data.datasets[0].data[idx] ?? 0;
+        ctx.fillText(String(val), bar.x, bar.y - 6);
+      });
+      ctx.restore();
+    }
+  };
+
+  const trendCtx = document.getElementById('loanTrendChart');
+  if (trendCtx && chartData.app_labels.length > 0) {
+    const loanTotal = chartData.loan_amounts.reduce((a, b) => a + b, 0);
+    const loanAvg = chartData.loan_amounts.length ? (loanTotal / chartData.loan_amounts.length) : 0;
+    const loanMax = chartData.loan_amounts.length ? Math.max(...chartData.loan_amounts) : 0;
+    const loanMin = chartData.loan_amounts.length ? Math.min(...chartData.loan_amounts) : 0;
+
+    new Chart(trendCtx, {
+      type: 'bar',
+      data: {
+        labels: chartData.app_labels,
+        datasets: [{
+          label: 'Loan Amount',
+          data: chartData.loan_amounts,
+          borderColor: '#0e8a84',
+          backgroundColor: 'rgba(14, 138, 132, 0.72)',
+          borderWidth: 1,
+          borderRadius: 6
+        }]
+      },
+      plugins: [barValuePlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => `Loan Amount: ${formatIN(context.raw)}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Application ID' }
+          },
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: 'Loan Amount' },
+            ticks: { callback: (value) => formatIN(value) }
+          }
+        }
+      }
+    });
+
+    const loanSummaryEl = document.getElementById('loanAmountSummary');
+    if (loanSummaryEl) {
+      const rows = chartData.app_labels.map((label, idx) => {
+        const value = chartData.loan_amounts[idx] || 0;
+        return `<li><strong>${label}</strong>: ${formatIN(value)}</li>`;
+      }).join('');
+      loanSummaryEl.innerHTML = `
+        <p class="muted"><strong>How to read:</strong> Taller bar means higher requested amount.</p>
+        <ul>
+          <li><strong>Average:</strong> ${formatIN(Math.round(loanAvg))}</li>
+          <li><strong>Highest:</strong> ${formatIN(Math.round(loanMax))}</li>
+          <li><strong>Lowest:</strong> ${formatIN(Math.round(loanMin))}</li>
+        </ul>
+        <p class="muted"><strong>Application-wise values:</strong></p>
+        <ul>${rows}</ul>
+      `;
+    }
+  }
+
+  const categoryCtx = document.getElementById('categoryChart');
+  if (categoryCtx && chartData.category_labels.length > 0) {
+    const categoryTotal = chartData.category_values.reduce((a, b) => a + b, 0);
+    new Chart(categoryCtx, {
+      type: 'doughnut',
+      data: {
+        labels: chartData.category_labels,
+        datasets: [{
+          data: chartData.category_values,
+          backgroundColor: ['#0e8a84', '#f0a04b', '#4f7cff', '#3fb27f', '#ef6a6a', '#8f6ce0', '#5b7f95']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const value = context.raw || 0;
+                const pct = categoryTotal ? ((value / categoryTotal) * 100).toFixed(1) : 0;
+                return `${context.label}: ${value} application(s) (${pct}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const summaryEl = document.getElementById('categorySummary');
+    if (summaryEl) {
+      const rows = chartData.category_labels.map((label, idx) => {
+        const value = chartData.category_values[idx] || 0;
+        const pct = categoryTotal ? ((value / categoryTotal) * 100).toFixed(1) : 0;
+        return `<li><strong>${label}</strong>: ${value} application(s) (${pct}%)</li>`;
+      }).join('');
+      summaryEl.innerHTML = `<p class="muted"><strong>How to read:</strong> Larger slice means more applications in that category.</p><ul>${rows}</ul>`;
+    }
+  } else {
+    const summaryEl = document.getElementById('categorySummary');
+    if (summaryEl) {
+      summaryEl.innerHTML = '<p class="muted">No categorized applications available yet.</p>';
+    }
+  }
+
+  const locationCtx = document.getElementById('locationChart');
+  if (locationCtx && chartData.location_labels.length > 0) {
+    const locationTotal = chartData.location_values.reduce((a, b) => a + b, 0);
+    const maxVal = Math.max(...chartData.location_values, 0);
+
+    new Chart(locationCtx, {
+      type: 'bar',
+      data: {
+        labels: chartData.location_labels,
+        datasets: [{
+          data: chartData.location_values,
+          backgroundColor: '#16323a',
+          borderRadius: 6
+        }]
+      },
+      plugins: [barValuePlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const value = context.raw || 0;
+                const pct = locationTotal ? ((value / locationTotal) * 100).toFixed(1) : 0;
+                return `Applications: ${value} (${pct}%)`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Property Location' } },
+          y: {
+            beginAtZero: true,
+            suggestedMax: maxVal + 1,
+            title: { display: true, text: 'Applications Count' },
+            ticks: { stepSize: 1, precision: 0 }
+          }
+        }
+      }
+    });
+
+    const locationSummaryEl = document.getElementById('locationSummary');
+    if (locationSummaryEl) {
+      const rows = chartData.location_labels.map((label, idx) => {
+        const value = chartData.location_values[idx] || 0;
+        const pct = locationTotal ? ((value / locationTotal) * 100).toFixed(1) : 0;
+        return `<li><strong>${label}</strong>: ${value} application(s) (${pct}%)</li>`;
+      }).join('');
+      locationSummaryEl.innerHTML = `<p class="muted"><strong>How to read:</strong> Taller bar means more applications from that location.</p><ul>${rows}</ul>`;
+    }
+  }
+</script>
+{% endblock %}

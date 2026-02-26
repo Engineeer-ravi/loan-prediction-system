@@ -1,0 +1,95 @@
+﻿{% extends "base.html" %}
+{% set page_title = "About LoanHub" %}
+{% set page_heading = "How To Use LoanHub" %}
+
+{% block content %}
+<section class="card">
+  <h3>About This Platform</h3>
+  <p class="muted">LoanHub helps users submit loan applications, get ML-assisted decisions, and review application insights in one place.</p>
+</section>
+
+<section class="card">
+  <h3>Quick Start (New Users)</h3>
+  <ol>
+    <li>Create an account from the Register page and log in.</li>
+    <li>Open <strong>Apply Loan</strong> and fill all required details correctly.</li>
+    <li>Select the correct <strong>Loan Category</strong>, amount, tenure, and property location.</li>
+    <li>Submit the form to get an approval result with confidence score.</li>
+    <li>Go to <strong>My Profile</strong> to see submitted applications and decision explanation.</li>
+    <li>Go to <strong>Analysis</strong> to view charts and summaries for your application data.</li>
+  </ol>
+</section>
+
+<section class="card">
+  <h3>How To Fill The Form Correctly</h3>
+  <ul>
+    <li>Use real values for income, loan amount, term, and credit score.</li>
+    <li>Enter spouse salary as <strong>0</strong> if not applicable.</li>
+    <li>Choose valid dropdown options; do not leave fields on "Select".</li>
+    <li>Loan amount and term should be positive numbers.</li>
+    <li>Declaration field should confirm that your data is accurate.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h3>Understanding Decision Output</h3>
+  <ul>
+    <li><strong>Approved / Not Approved:</strong> Model decision for current input.</li>
+    <li><strong>Confidence:</strong> Model certainty for the predicted decision.</li>
+    <li><strong>Positive Factors:</strong> Inputs that supported approval.</li>
+    <li><strong>Risk Factors:</strong> Inputs that may reduce approval chances.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h3>Analysis Page Guide</h3>
+  <ul>
+    <li><strong>Application-wise Loan Amount:</strong> Compare requested amount across your applications.</li>
+    <li><strong>Loan Category Distribution:</strong> See where most applications are concentrated.</li>
+    <li><strong>Property Location Split:</strong> Compare Urban/Semiurban/Rural application counts.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h3>Security Notes</h3>
+  <ul>
+    <li>The app uses login sessions and CSRF protection for form safety.</li>
+    <li>Always log out after use, especially on shared systems.</li>
+    <li>Do not share your password.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h3>Documents Checklist</h3>
+  <p class="muted">Keep these documents ready before submitting your application:</p>
+  <ul>
+    <li>Identity proof (Aadhaar, PAN, Passport, Voter ID).</li>
+    <li>Address proof (utility bill, rental agreement, Aadhaar with current address).</li>
+    <li>Income proof (salary slips, bank statements, Form 16 / ITR).</li>
+    <li>Employment proof (offer letter, employer certificate, business proof for self-employed).</li>
+    <li>Property papers (if loan type requires property-backed verification).</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h3>Improve Your Score</h3>
+  <ul>
+    <li>Increase repayment capacity by improving income-to-loan ratio.</li>
+    <li>Choose a realistic loan amount and tenure based on your income.</li>
+    <li>Maintain strong credit behavior and avoid missed payments.</li>
+    <li>Provide complete and accurate details in every required field.</li>
+    <li>Use correct loan category and location to avoid profile mismatch.</li>
+  </ul>
+</section>
+
+<section class="card">
+  <h3>FAQ</h3>
+  <ul>
+    <li><strong>Why was my application not approved?</strong> Decision depends on combined factors like credit score, income, loan amount, term, and profile details.</li>
+    <li><strong>What does confidence mean?</strong> Confidence is model certainty for the predicted outcome; higher percentage means stronger confidence.</li>
+    <li><strong>Can I apply again after rejection?</strong> Yes. Improve key factors and submit a new application.</li>
+    <li><strong>Why does analysis look limited for new users?</strong> Charts are based on your saved applications. More submissions give richer insights.</li>
+    <li><strong>Can admin view all applications?</strong> Yes. Admin users can access the admin panel and review all submissions.</li>
+  </ul>
+</section>
+{% endblock %}
