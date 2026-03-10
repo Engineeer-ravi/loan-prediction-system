@@ -1,27 +1,99 @@
-# loan-prediction-flask
+# Loan Prediction System (Flask)
 
-The project is a Flask web application featuring user authentication, role-based access control, and loan eligibility prediction using a machine learning algorithm. Users can register, log in, and log out, with secure password hashing. Each user has a specific role (e.g., admin or user), and the application displays different dashboards based on their role.
-In addition to authentication, the application incorporates a machine learning algorithm to assess a user's eligibility for a loan. Upon login, the system predicts loan approval based on user inputs. If the prediction is positive, the user's loan application details are saved to a SQLite database using Flask-SQLAlchemy. If the prediction is negative, the user receives a notification.
-The project employs Flask-Login for user session management, bcrypt for password hashing, and Flask-Migrate for database migrations. It serves as an example of integrating machine learning functionality within a web application for loan eligibility determination.
+A Flask web application for **loan eligibility pre-screening** with user authentication, role-based dashboards, and persisted loan applications.
 
-**sign-up window**
-![fe new sign-up](https://github.com/ntawandae/loan-prediction-flask/assets/56553042/1b41e72e-211b-4938-8c8d-47feaf8fcf7b)
-**login window**
-![fe new login](https://github.com/ntawandae/loan-prediction-flask/assets/56553042/ec8610ec-ec17-427a-95c5-7995ecaf1ffb)
-**Dashboard**
-![msg dashboard](https://github.com/ntawandae/loan-prediction-flask/assets/56553042/dee46e1c-a659-4460-9efb-f87cc4ddb0fe)
-**#loan application**(the eligibility test is carried here, if user is eligible the information is saved and made available to admin who will give final decision to grant or reject the loan
-![fe application](https://github.com/ntawandae/loan-prediction-flask/assets/56553042/c6bca914-6d3a-47cc-a054-74a99376689d)
-**user profile view**
-![fe up](https://github.com/ntawandae/loan-prediction-flask/assets/56553042/e89bb0e2-0f4f-4de3-8742-bac8e83d93f1)
-**admin view** of all received loan applications
-![fe adminview](https://github.com/ntawandae/loan-prediction-flask/assets/56553042/31c0aab2-6e42-4dec-89b1-889c6f36b59d)
-**search loan window**
-![fe search](https://github.com/ntawandae/loan-prediction-flask/assets/56553042/3a0da9d7-0663-4c14-9ef6-da1fade6a99e)
+## Project Details
 
-****Usage****
+This project combines a machine learning model with a traditional Flask app workflow:
 
+- Users can register, log in, and submit a loan application form.
+- The backend converts submitted form values into model-ready features.
+- A trained model (`model.joblib`) predicts whether the application is preliminarily eligible.
+- If predicted as eligible, the application is saved to SQLite for review in admin views.
 
-firstly activate the virtual envronment for this to work then run
+The app demonstrates how to integrate:
+
+- **Authentication & sessions**: Flask-Login + bcrypt password hashing.
+- **Persistence**: Flask-SQLAlchemy models + Alembic/Flask-Migrate migrations.
+- **ML inference in request flow**: model loading with Joblib and prediction during form submission.
+
+## Main Features
+
+- User registration and login/logout.
+- Role-aware app experience (user/admin-oriented pages).
+- Loan application form with personal, employment, and loan attributes.
+- Prediction-based approval gate before database persistence.
+- Admin-facing application listing.
+
+## Tech Stack
+
+- Python
+- Flask
+- Flask-Login
+- Flask-SQLAlchemy
+- Flask-Migrate
+- bcrypt
+- NumPy
+- Joblib
+- SQLite
+
+## Repository Structure
+
+- `app.py` — main Flask app, routes, SQLAlchemy models, and prediction logic.
+- `templates/` — HTML templates for auth, dashboards, profile, and prediction form.
+- `static/` — CSS/JS and image assets.
+- `migrations/` — Alembic migration setup and versions.
+- `model.joblib` — serialized ML model used for loan prediction.
+- `train.csv`, `test.csv` — dataset artifacts.
+
+## Getting Started
+
+### 1) Clone and enter the project
+
+```bash
+git clone <your-repo-url>
+cd loan-prediction-system
+```
+
+### 2) Create and activate a virtual environment
+
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Linux/macOS
+# .venv\Scripts\activate   # Windows (PowerShell)
+```
+
+### 3) Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4) Initialize database (if needed)
+
+```bash
+flask db upgrade
+```
+
+### 5) Run the application
+
+```bash
 python app.py
+```
 
+Open: `http://127.0.0.1:5000`
+
+## Typical User Flow
+
+1. Register an account.
+2. Log in.
+3. Open the prediction/application page.
+4. Submit loan details.
+5. Receive approval/not-approved feedback.
+6. Approved applications are stored and visible in admin listings.
+
+## Notes
+
+- `app.py` currently contains both routing and model logic in a single file. As a next step, you can split this into blueprints/services for better maintainability.
+- The Flask secret key is hardcoded in the sample code and should be replaced with an environment variable for production.
+- SQLite is suitable for local development; consider PostgreSQL/MySQL for production deployments.
